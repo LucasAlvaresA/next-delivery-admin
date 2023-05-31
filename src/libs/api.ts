@@ -26,4 +26,14 @@ export const api = {
             }, 1000);
         });
     },
+    redefinePassword: async (
+        password: string,
+        token: string
+    ): Promise<{ error: string }> => {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({ error: "" });
+            }, 1000);
+        });
+    },
 };
