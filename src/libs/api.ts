@@ -1,3 +1,19 @@
+import { Order } from "@/types/Order";
+import { OrderStatus } from "@/types/OrderStatus";
+import { Product } from "@/types/Product";
+
+const tempProduct: Product = {
+    id: 999,
+    image: "https://static.todamateria.com.br/upload/pi/ng/pinguim01-cke.jpg",
+    category: {
+        id: 87,
+        name: "Penguin",
+    },
+    name: "Penguin",
+    price: 65.2,
+    description: "Just a nice penguin",
+};
+
 export const api = {
     login: async (
         email: string,
@@ -35,5 +51,60 @@ export const api = {
                 resolve({ error: "" });
             }, 1000);
         });
+    },
+    getOrders: async (): Promise<Order[]> => {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                const orders: Order[] = [];
+                const allStatus: OrderStatus[] = [
+                    "preparing",
+                    "sent",
+                    "delivered",
+                ];
+
+                for (let i = 0; i < 6; i++) {
+                    orders.push({
+                        id: parseInt("12" + i),
+                        status: allStatus[Math.floor(Math.random() * 3)],
+                        orderDate: "2023-01-03 18:30",
+                        userId: "1",
+                        userName: "John Doe",
+                        shippingAddress: {
+                            id: 99,
+                            zipCode: "38938933",
+                            address: "Test street",
+                            number: "1500",
+                            neighborhood: "Somewhere",
+                            city: "São Paulo",
+                            state: "SP",
+                            complement: "Complement address",
+                        },
+                        shippingPrice: 12,
+                        paymentType: "card",
+                        changeValue: 0,
+                        coupon: "TEST5",
+                        couponDiscount: 2,
+                        products: [
+                            { quantity: 2, product: tempProduct },
+                            {
+                                quantity: 3,
+                                product: {
+                                    ...tempProduct,
+                                    id: 45,
+                                    name: "Another Penguin",
+                                    image: "https://teretallinn.com/wp-content/uploads/2022/01/penguin2_2-1024x768-1.jpeg",
+                                },
+                            },
+                        ],
+                        subtotal: 99,
+                        total: 120,
+                    });
+                }
+                resolve(orders);
+            }, 1000);
+        });
+    },
+    changeOrderStatus: async (id: number, newStatus: OrderStatus) => {
+        return true;
     },
 };
