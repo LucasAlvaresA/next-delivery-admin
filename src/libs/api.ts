@@ -138,4 +138,25 @@ export const api = {
             }, 500);
         });
     },
+    deleteProduct: async (id: number): Promise<boolean> => {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve(true);
+            }, 1000);
+        });
+    },
+    createProduct: async (form: FormData): Promise<boolean> => {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve(true);
+            }, 1000);
+        });
+    },
+    updateProduct: async (form: FormData): Promise<boolean> => {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve(true);
+            }, 1000);
+        });
+    },
 };

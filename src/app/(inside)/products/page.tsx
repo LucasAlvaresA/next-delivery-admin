@@ -1,5 +1,7 @@
 "use client";
 
+import { ProductEditDialog } from "@/components/ProductEditDialog";
+import { ProductTableItem } from "@/components/ProductTableItem";
 import { ProductTableSkeleton } from "@/components/ProductTableSkeleton";
 import { api } from "@/libs/api";
 import { Category } from "@/types/Category";
@@ -7,6 +9,11 @@ import { Product } from "@/types/Product";
 import {
     Box,
     Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle,
     Table,
     TableBody,
     TableCell,
@@ -14,12 +21,20 @@ import {
     TableRow,
     Typography,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 const Page = () => {
     const [loading, setLoading] = useState(false);
     const [products, setProducts] = useState<Product[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
+
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [productToDelete, setProductToDelete] = useState<Product>();
+    const [loadingDelete, setLoadingDelete] = useState(false);
+
+    const [showEditDialog, setShowEditDialog] = useState(false);
+    const [productToEdit, setProductToEdit] = useState<Product>();
+    const [loadingEdit, setLoadingEdit] = useState(false);
 
     useEffect(() => {
         getProdutcs();
@@ -32,7 +47,44 @@ const Page = () => {
         setLoading(false);
     };
 
-    const handleNewProduct = () => {};
+    const handleNewProduct = () => {
+        setProductToEdit(undefined);
+        setShowEditDialog(true);
+    };
+
+    const handleEditProduct = (product: Product) => {
+        setProductToEdit(product);
+        setShowEditDialog(true);
+    };
+
+    const handleSaveEditDialog = async (event: FormEvent<HTMLFormElement>) => {
+        let form = new FormData(event.currentTarget);
+        setLoadingEdit(true);
+        if (productToEdit) {
+            form.append("id", productToEdit.id.toString());
+            await api.updateProduct(form);
+        } else {
+            await api.createProduct(form);
+        }
+        setLoadingEdit(false);
+        setShowEditDialog(false);
+        getProdutcs();
+    };
+
+    const handleDeleteProduct = (product: Product) => {
+        setProductToDelete(product);
+        setShowDeleteDialog(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (productToDelete) {
+            setLoadingDelete(true);
+            await api.deleteProduct(productToDelete.id);
+            setLoadingDelete(false);
+            setShowDeleteDialog(false);
+            getProdutcs();
+        }
+    };
 
     return (
         <>
@@ -83,8 +135,7 @@ const Page = () => {
                             </TableCell>
                             <TableCell
                                 sx={{
-                                    xs: 50,
-                                    md: 130,
+                                    width: { xs: 50, md: 130 },
                                 }}
                             >
                                 Actions
@@ -99,8 +150,58 @@ const Page = () => {
                                 <ProductTableSkeleton />
                             </>
                         )}
+                        {!loading &&
+                            products.map((item) => (
+                                <ProductTableItem
+                                    key={item.id}
+                                    item={item}
+                                    onEdit={handleEditProduct}
+                                    onDelete={handleDeleteProduct}
+                                />
+                            ))}
                     </TableBody>
                 </Table>
+
+                <Dialog
+                    open={showDeleteDialog}
+                    onClose={() =>
+                        !loadingDelete ? setShowDeleteDialog(false) : null
+                    }
+                >
+                    <DialogTitle>
+                        Are you sure you want to delete this product?
+                    </DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            It is not possible to restore the product after
+                            confirming this action
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button
+                            onClick={() => setShowDeleteDialog(false)}
+                            disabled={loadingDelete}
+                        >
+                            No
+                        </Button>
+                        <Button
+                            color="error"
+                            onClick={handleConfirmDelete}
+                            disabled={loadingDelete}
+                        >
+                            Yes
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+
+                <ProductEditDialog
+                    open={showEditDialog}
+                    onClose={() => setShowEditDialog(false)}
+                    onSave={handleSaveEditDialog}
+                    disabled={loadingEdit}
+                    product={productToEdit}
+                    categories={categories}
+                />
             </Box>
         </>
     );
